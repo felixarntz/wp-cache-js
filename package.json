@@ -1,0 +1,39 @@
+{
+  "name": "wp-cache-js",
+  "version": "0.1.0",
+  "description": "A JavaScript-based cache solution for WordPress using the client's local storage or, as fallback, a simple variable storage.",
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "javascript",
+    "library",
+    "cache"
+  ],
+  "author": {
+    "name": "Felix Arntz",
+    "email": "felix-arntz@leaves-and-love.net",
+    "url": "https://leaves-and-love.net"
+  },
+  "homepage": "https://github.com/felixarntz/wp-cache-js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/felixarntz/wp-cache-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/felixarntz/wp-cache-js/issues"
+  },
+  "license": "GPL-3.0",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "devDependencies": {
+    "gulp": "~3.9.1",
+    "gulp-jscs": "~4.0.0",
+    "gulp-jshint": "~2.0.4",
+    "gulp-concat": "~2.6.1",
+    "gulp-uglify": "~2.0.1",
+    "gulp-rename": "~1.2.2",
+    "gulp-replace": "~0.5.4",
+    "jshint": "~2.9.4"
+  }
+}

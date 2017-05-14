@@ -1,0 +1,4 @@
+gulpfile.js
+**/*.min.js
+**/node_modules/**
+**/vendor/**

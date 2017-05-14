@@ -1,0 +1,30 @@
+{
+  "name": "felixarntz/wp-cache-js",
+  "description": "A JavaScript-based cache solution for WordPress using the client's local storage or, as fallback, a simple variable storage.",
+  "version": "0.1.0",
+  "license": "GPL-3.0",
+  "type": "wordpress-plugin",
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "javascript",
+    "library",
+    "cache"
+  ],
+  "homepage": "https://github.com/felixarntz/wp-cache-js",
+  "authors": [
+    {
+      "name": "Felix Arntz",
+      "email": "felix-arntz@leaves-and-love.net",
+      "homepage": "https://leaves-and-love.net",
+      "role": "Lead Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/felixarntz/wp-cache-js/issues"
+  },
+  "require": {
+    "php": ">=5.6.0",
+    "composer/installers": "~1.0"
+  },
+}
