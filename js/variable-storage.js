@@ -5,7 +5,8 @@
 		networkGroups = {},
 		globalGroups = {},
 		currentSiteId = settings.siteId,
-		currentNetworkId = settings.networkId;
+		currentNetworkId = settings.networkId,
+		implementation;
 
 	function getCurrentTime() {
 		return Math.floor( Date.now() / 1000 );
@@ -47,6 +48,8 @@
 	}
 
 	function exists( key, group, isFullKey ) {
+		var item;
+
 		if ( _.isUndefined( cachedData[ group ] ) ) {
 			return false;
 		}
@@ -59,7 +62,7 @@
 			return false;
 		}
 
-		var item = cachedData[ group ][ key ];
+		item = cachedData[ group ][ key ];
 		if ( item.expire && item.expire < getCurrentTime() ) {
 			delete cachedData[ group ][ key ];
 			return false;
@@ -68,7 +71,7 @@
 		return true;
 	}
 
-	var implementation = {
+	implementation = {
 
 		add: function( key, data, group, expire ) {
 			if ( exists( key, group ) ) {
@@ -180,11 +183,13 @@
 		},
 
 		addNetworkGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( networkGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -194,11 +199,13 @@
 		},
 
 		addGlobalGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( globalGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -208,7 +215,7 @@
 		},
 
 		addNonPersistentGroups: function() {
-			// Default cache doesn't persist so nothing to do here.
+			/* Default cache doesn't persist so nothing to do here. */
 		},
 
 		checkRequirements: function() {

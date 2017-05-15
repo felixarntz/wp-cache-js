@@ -1,6 +1,10 @@
 ( function( window, _ ) {
 	'use strict';
 
+	var implementations = [],
+		currentImplementation,
+		loggedError = false;
+
 	window.wpCacheSettings = window.wpCacheSettings || {
 		siteId: 1,
 		networkId: 1,
@@ -10,20 +14,16 @@
 		}
 	};
 
-	var implementations = [],
-		currentImplementation,
-		loggedError = false;
-
 	/**
 	 * Sets the current implementation based on priority and whether requirements are met.
 	 *
 	 * @since 0.1.0
 	 */
 	function setCurrentImplementation() {
-		for ( var i in implementations ) {
-			var found;
+		var i, j;
 
-			for ( var j in implementations[ i ] ) {
+		implementationLoop : for ( i in implementations ) {
+			for ( j in implementations[ i ] ) {
 				if ( implementations[ i ][ j ].checkRequirements() ) {
 					if ( currentImplementation && _.isFunction( currentImplementation.close ) ) {
 						currentImplementation.close();
@@ -35,13 +35,8 @@
 					}
 
 					loggedError = false;
-					found = true;
-					break;
+					break implementationLoop;
 				}
-			}
-
-			if ( found ) {
-				break;
 			}
 		}
 	}
@@ -424,8 +419,6 @@
 		 * @returns {boolean} True on success, false on failure.
 		 */
 		registerImplementation: function( identifier, implementation, priority ) {
-			priority = priority || 10;
-
 			var requiredMethods = [
 				'add',
 				'replace',
@@ -441,13 +434,15 @@
 				'addGlobalGroups',
 				'addNonPersistentGroups',
 				'checkRequirements'
-			];
+			], i;
 
-			for ( var i in requiredMethods ) {
+			for ( i in requiredMethods ) {
 				if ( ! _.isFunction( implementation[ requiredMethods[ i ] ] ) ) {
 					return false;
 				}
 			}
+
+			priority = priority || 10;
 
 			implementation.identifier = identifier;
 			implementation.priority   = priority;
@@ -475,7 +470,8 @@
 		networkGroups = {},
 		globalGroups = {},
 		currentSiteId = settings.siteId,
-		currentNetworkId = settings.networkId;
+		currentNetworkId = settings.networkId,
+		implementation;
 
 	function getCurrentTime() {
 		return Math.floor( Date.now() / 1000 );
@@ -525,9 +521,11 @@
 	}
 
 	function exists( key, group, isFullKey ) {
+		var item;
+
 		key = getLocalStorageIdentifier( key, group, isFullKey );
 
-		var item = localStorage.getItem( key );
+		item = localStorage.getItem( key );
 		if ( ! item ) {
 			return false;
 		}
@@ -547,6 +545,8 @@
 	}
 
 	function existsNonPersistent( key, group, isFullKey ) {
+		var item;
+
 		if ( _.isUndefined( nonPersistentData[ group ] ) ) {
 			return false;
 		}
@@ -559,7 +559,7 @@
 			return false;
 		}
 
-		var item = nonPersistentData[ group ][ key ];
+		item = nonPersistentData[ group ][ key ];
 		if ( item.expire && item.expire < getCurrentTime() ) {
 			delete nonPersistentData[ group ][ key ];
 			return false;
@@ -568,7 +568,7 @@
 		return true;
 	}
 
-	var implementation = {
+	implementation = {
 
 		add: function( key, data, group, expire ) {
 			if ( nonPersistentGroups[ group ] ) {
@@ -667,10 +667,12 @@
 		},
 
 		flush: function() {
+			var keys, i;
+
 			nonPersistentData = {};
 
-			var keys = Object.keys( localStorage );
-			for ( var i in keys ) {
+			keys = Object.keys( localStorage );
+			for ( i in keys ) {
 				if ( 'wpCache:' === keys[ i ].substring( 0, 8 ) ) {
 					localStorage.removeItem( keys[ i ] );
 				}
@@ -680,6 +682,8 @@
 		},
 
 		incr: function( key, offset, group ) {
+			var dataObject;
+
 			key = getFullKey( key, group );
 
 			if ( nonPersistentGroups[ group ] ) {
@@ -706,7 +710,7 @@
 
 			key = getLocalStorageIdentifier( key, group, true );
 
-			var dataObject = JSON.parse( localStorage.getItem( key ) );
+			dataObject = JSON.parse( localStorage.getItem( key ) );
 
 			if ( ! _.isNumber( dataObject.data ) ) {
 				dataObject.data = 0;
@@ -724,6 +728,8 @@
 		},
 
 		decr: function( key, offset, group ) {
+			var dataObject;
+
 			key = getFullKey( key, group );
 
 			if ( nonPersistentGroups[ group ] ) {
@@ -750,7 +756,7 @@
 
 			key = getLocalStorageIdentifier( key, group, true );
 
-			var dataObject = JSON.parse( localStorage.getItem( key ) );
+			dataObject = JSON.parse( localStorage.getItem( key ) );
 
 			if ( ! _.isNumber( dataObject.data ) ) {
 				dataObject.data = 0;
@@ -780,11 +786,13 @@
 		},
 
 		addNetworkGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( networkGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -794,11 +802,13 @@
 		},
 
 		addGlobalGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( globalGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -808,11 +818,13 @@
 		},
 
 		addNonPersistentGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( nonPersistentGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -837,7 +849,8 @@
 		networkGroups = {},
 		globalGroups = {},
 		currentSiteId = settings.siteId,
-		currentNetworkId = settings.networkId;
+		currentNetworkId = settings.networkId,
+		implementation;
 
 	function getCurrentTime() {
 		return Math.floor( Date.now() / 1000 );
@@ -879,6 +892,8 @@
 	}
 
 	function exists( key, group, isFullKey ) {
+		var item;
+
 		if ( _.isUndefined( cachedData[ group ] ) ) {
 			return false;
 		}
@@ -891,7 +906,7 @@
 			return false;
 		}
 
-		var item = cachedData[ group ][ key ];
+		item = cachedData[ group ][ key ];
 		if ( item.expire && item.expire < getCurrentTime() ) {
 			delete cachedData[ group ][ key ];
 			return false;
@@ -900,7 +915,7 @@
 		return true;
 	}
 
-	var implementation = {
+	implementation = {
 
 		add: function( key, data, group, expire ) {
 			if ( exists( key, group ) ) {
@@ -1012,11 +1027,13 @@
 		},
 
 		addNetworkGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( networkGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -1026,11 +1043,13 @@
 		},
 
 		addGlobalGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( globalGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -1040,7 +1059,7 @@
 		},
 
 		addNonPersistentGroups: function() {
-			// Default cache doesn't persist so nothing to do here.
+			/* Default cache doesn't persist so nothing to do here. */
 		},
 
 		checkRequirements: function() {

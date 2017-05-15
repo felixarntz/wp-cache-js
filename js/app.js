@@ -1,6 +1,10 @@
 ( function( window, _ ) {
 	'use strict';
 
+	var implementations = [],
+		currentImplementation,
+		loggedError = false;
+
 	window.wpCacheSettings = window.wpCacheSettings || {
 		siteId: 1,
 		networkId: 1,
@@ -10,20 +14,16 @@
 		}
 	};
 
-	var implementations = [],
-		currentImplementation,
-		loggedError = false;
-
 	/**
 	 * Sets the current implementation based on priority and whether requirements are met.
 	 *
 	 * @since 0.1.0
 	 */
 	function setCurrentImplementation() {
-		for ( var i in implementations ) {
-			var found;
+		var i, j;
 
-			for ( var j in implementations[ i ] ) {
+		implementationLoop : for ( i in implementations ) {
+			for ( j in implementations[ i ] ) {
 				if ( implementations[ i ][ j ].checkRequirements() ) {
 					if ( currentImplementation && _.isFunction( currentImplementation.close ) ) {
 						currentImplementation.close();
@@ -35,13 +35,8 @@
 					}
 
 					loggedError = false;
-					found = true;
-					break;
+					break implementationLoop;
 				}
-			}
-
-			if ( found ) {
-				break;
 			}
 		}
 	}
@@ -424,8 +419,6 @@
 		 * @returns {boolean} True on success, false on failure.
 		 */
 		registerImplementation: function( identifier, implementation, priority ) {
-			priority = priority || 10;
-
 			var requiredMethods = [
 				'add',
 				'replace',
@@ -441,13 +434,15 @@
 				'addGlobalGroups',
 				'addNonPersistentGroups',
 				'checkRequirements'
-			];
+			], i;
 
-			for ( var i in requiredMethods ) {
+			for ( i in requiredMethods ) {
 				if ( ! _.isFunction( implementation[ requiredMethods[ i ] ] ) ) {
 					return false;
 				}
 			}
+
+			priority = priority || 10;
 
 			implementation.identifier = identifier;
 			implementation.priority   = priority;

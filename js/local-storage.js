@@ -6,7 +6,8 @@
 		networkGroups = {},
 		globalGroups = {},
 		currentSiteId = settings.siteId,
-		currentNetworkId = settings.networkId;
+		currentNetworkId = settings.networkId,
+		implementation;
 
 	function getCurrentTime() {
 		return Math.floor( Date.now() / 1000 );
@@ -56,9 +57,11 @@
 	}
 
 	function exists( key, group, isFullKey ) {
+		var item;
+
 		key = getLocalStorageIdentifier( key, group, isFullKey );
 
-		var item = localStorage.getItem( key );
+		item = localStorage.getItem( key );
 		if ( ! item ) {
 			return false;
 		}
@@ -78,6 +81,8 @@
 	}
 
 	function existsNonPersistent( key, group, isFullKey ) {
+		var item;
+
 		if ( _.isUndefined( nonPersistentData[ group ] ) ) {
 			return false;
 		}
@@ -90,7 +95,7 @@
 			return false;
 		}
 
-		var item = nonPersistentData[ group ][ key ];
+		item = nonPersistentData[ group ][ key ];
 		if ( item.expire && item.expire < getCurrentTime() ) {
 			delete nonPersistentData[ group ][ key ];
 			return false;
@@ -99,7 +104,7 @@
 		return true;
 	}
 
-	var implementation = {
+	implementation = {
 
 		add: function( key, data, group, expire ) {
 			if ( nonPersistentGroups[ group ] ) {
@@ -198,10 +203,12 @@
 		},
 
 		flush: function() {
+			var keys, i;
+
 			nonPersistentData = {};
 
-			var keys = Object.keys( localStorage );
-			for ( var i in keys ) {
+			keys = Object.keys( localStorage );
+			for ( i in keys ) {
 				if ( 'wpCache:' === keys[ i ].substring( 0, 8 ) ) {
 					localStorage.removeItem( keys[ i ] );
 				}
@@ -211,6 +218,8 @@
 		},
 
 		incr: function( key, offset, group ) {
+			var dataObject;
+
 			key = getFullKey( key, group );
 
 			if ( nonPersistentGroups[ group ] ) {
@@ -237,7 +246,7 @@
 
 			key = getLocalStorageIdentifier( key, group, true );
 
-			var dataObject = JSON.parse( localStorage.getItem( key ) );
+			dataObject = JSON.parse( localStorage.getItem( key ) );
 
 			if ( ! _.isNumber( dataObject.data ) ) {
 				dataObject.data = 0;
@@ -255,6 +264,8 @@
 		},
 
 		decr: function( key, offset, group ) {
+			var dataObject;
+
 			key = getFullKey( key, group );
 
 			if ( nonPersistentGroups[ group ] ) {
@@ -281,7 +292,7 @@
 
 			key = getLocalStorageIdentifier( key, group, true );
 
-			var dataObject = JSON.parse( localStorage.getItem( key ) );
+			dataObject = JSON.parse( localStorage.getItem( key ) );
 
 			if ( ! _.isNumber( dataObject.data ) ) {
 				dataObject.data = 0;
@@ -311,11 +322,13 @@
 		},
 
 		addNetworkGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( networkGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -325,11 +338,13 @@
 		},
 
 		addGlobalGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( globalGroups[ groups[ i ] ] ) {
 					continue;
 				}
@@ -339,11 +354,13 @@
 		},
 
 		addNonPersistentGroups: function( groups ) {
+			var i;
+
 			if ( ! _.isArray( groups ) ) {
 				groups = [ groups ];
 			}
 
-			for ( var i in groups ) {
+			for ( i in groups ) {
 				if ( nonPersistentGroups[ groups[ i ] ] ) {
 					continue;
 				}

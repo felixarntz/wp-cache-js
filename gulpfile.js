@@ -112,9 +112,8 @@ gulp.task( 'build', [ 'readme-replace' ], function() {
 // compile JavaScript
 gulp.task( 'js', function( done ) {
 	gulp.src( paths.js.files )
-		.pipe( jscs({
-			fix: false
-		}) )
+		.pipe( jscs() )
+		.pipe( jscs.reporter() )
 		.pipe( jshint({
 			lookup: true
 		}) )
